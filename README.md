@@ -5,7 +5,7 @@ https://pypi.org/project/epitran/
 
 To do:
 
-- implement extracting unicode ranges instead of removing emojis
+- implement extracting unicode ranges instead of removing emojis (https://www.ling.upenn.edu/courses/Spring_2003/ling538/UnicodeRanges.html)
 - make filtering class and make it pretty
 - implement edit distance taking into account word lengths
 - also make cleansing class and make it pretty
