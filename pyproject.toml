@@ -1,13 +1,12 @@
 [tool.poetry]
 name = "name_transliteration"
 version = "0.0.1"
-description = ""
+description = "A pipeline for filtering, cleansing and training and language transliteration model. For Advanced Topics project."
 authors = ["yug <yu.greenland@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
 epitran = "^1.9"
-pandas = "^1.2.3"
 pykakasi = "^2.0.6"
 editdistance = "^0.5.3"
 
