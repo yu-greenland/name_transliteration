@@ -10,3 +10,6 @@ To do:
 - implement edit distance taking into account word lengths
 - also make cleansing class and make it pretty
 - have special protocol for Japanese
+
+problems
+- poetry added packages are not working as expected, is not found when run in poetry shell, work around is to directly call the virtual environment python on the python program I want to run

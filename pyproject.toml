@@ -9,6 +9,7 @@ python = "^3.8"
 epitran = "^1.9"
 pykakasi = "^2.0.6"
 editdistance = "^0.5.3"
+pandas = "^1.2.4"
 
 [tool.poetry.dev-dependencies]
 
