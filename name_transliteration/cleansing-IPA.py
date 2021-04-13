@@ -35,10 +35,7 @@ elif language == 'ar':
 else:
     # if not found, we use google translate to translate to English
     # then use the english IPA translator
-    print("using google translate")
-    from googletrans import Translator
-    translator = Translator()
-    using_google_trans = True
+    print("not supported")
     epi_username = epitran.Epitran('eng-Latn')
 
 epi_screen_name = epitran.Epitran('eng-Latn')

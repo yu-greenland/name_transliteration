@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # coding: utf-8
 
 import sys
@@ -10,7 +9,8 @@ import pandas as pd
 
 
 """
-
+A filter class
+Part of the pipeline
 """
 class Filter:
     """
@@ -26,6 +26,7 @@ class Filter:
     top level function that performs the entire filtering process
     
     data_path: a string, the path to the folder containig the Twitter data
+    return: void, sets the language_dataframe variable
     """
     def filterData(self, data_path:str):
         # read data from the data_path
@@ -36,9 +37,9 @@ class Filter:
         df = twitter_data[twitter_data["language"] == self.language]
 
         # remove emojis
-        df["username"].apply(self.deEmojify)
-        # remove all rows where the username is empty, this removes names which are just emojis
-        df = df[df.username != '']
+        df["screen_name"].apply(self.deEmojify)
+        # remove all rows where the screen_name is empty, this removes names which are just emojis
+        df = df[df.screen_name != '']
         df.dropna(inplace=True)
         df.drop_duplicates()
         df.reset_index(drop=True, inplace=True)
@@ -49,6 +50,8 @@ class Filter:
     """
     reads in data and additionally extracts the fields we are interested in
     extracts the screen name, user name and language
+
+    data_path: a string, the path to the folder containig the Twitter data
     returns a list of dictionaries
     """
     def readData(self, data_path:str) -> list:
@@ -63,15 +66,15 @@ class Filter:
                     for line in f:
                         json_line = json.loads(line)
                         filtered_dict = {
-                            "screen_name": json_line["user"]["screen_name"],
-                            "username": json_line["user"]["name"],
+                            "username": json_line["user"]["screen_name"],
+                            "screen_name": json_line["user"]["name"],
                             "language": json_line["lang"]
                         }
                         df_list.append(filtered_dict)
         return df_list
 
     """
-
+    removes emojis
     """
     def deEmojify(self, text):
         regrex_pattern = re.compile(
@@ -84,11 +87,23 @@ class Filter:
         return regrex_pattern.sub(r'',text)
 
     """
+    saves the language dataframe as json
+    creates the out_path folder if it does not exist
 
+    has an optional argument to be able to have a custom file name
     """
-    def saveData(self, out_path:str):
+    def saveData(self, out_path:str, file_name=None):
         try:
             os.mkdir(out_path)
         except OSError as error:
-            print('filtered folder already created')
-        self.language_dataframe.to_json(out_path + '/' +self.language+'_language_filtered.json',orient="records",lines=True)
+            print('folder already created')
+        if file_name is None:
+            self.language_dataframe.to_json(out_path + '/' +self.language+'_language_filtered.json',orient="records")
+        else:
+            self.language_dataframe.to_json(out_path + '/' + file_name,orient="records")
+
+    """
+    return the language data frame
+    """
+    def getDataFrame(self):
+        return self.language_dataframe
