@@ -87,6 +87,12 @@ class Filter:
         return regrex_pattern.sub(r'',text)
 
     """
+    
+    """
+    def keepLanguage(self, text):
+        pass
+
+    """
     saves the language dataframe as json
     creates the out_path folder if it does not exist
 

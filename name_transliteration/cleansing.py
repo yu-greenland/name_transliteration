@@ -20,7 +20,7 @@ class Cleanse:
     can supply a dataframe and an edit threshold on the creation of the Cleanse class
     if a dataframe is supplied, the language should be automatically set
     """
-    def __init__(self, language_dataframe:pd.DataFrame = None, edit_threshold = 8):
+    def __init__(self, language_dataframe:pd.DataFrame = None, edit_threshold = 0.6):
         if language_dataframe is None:
             self.language_dataframe = None
             self.language = None
@@ -53,6 +53,8 @@ class Cleanse:
             username = username_series[index]
             screen_name = value
 
+            # print(username,screen_name)
+
             translit_username = self.translitUserName(username)
             translit_screen_name = self.translitScreenName(screen_name)
 
@@ -65,13 +67,28 @@ class Cleanse:
                 rows_over_threshold.append(index)
             else:
                 # use edit distance with regards to string length
-                edit_distance = editdistance.eval(translit_username, translit_screen_name)
+                edit_distance = self.evaluateEditDistance(translit_username, translit_screen_name)
                 if edit_distance > self.edit_threshold:
                     rows_over_threshold.append(index)
+                else:
+                    print(username,screen_name)
+                    print(translit_username,translit_screen_name)
+                    print(edit_distance)
         
         self.language_dataframe = self.language_dataframe.drop(rows_over_threshold)
         self.language_dataframe.reset_index(drop=True, inplace=True)
     
+    """
+    if a name is very long, it is more likely to need more edits
+    while if a name is very short, then the edit distance would be very small
+    we want to treat short names and long names the same way
+    in this method we use the average length of the two names and divide the edit distance by this
+    by doing so, the threshold is normalised to be between 0 and 1 and also being below the threshold means more similar name pairs
+    """
+    def evaluateEditDistance(self, name1:str, name2:str):
+        avg_length = (len(name1) + len(name2) / 2)
+        return editdistance.eval(name1, name2) / avg_length
+
     """
     my hope with having a dedicated translit function for user names is that for different
     languages custom rules can be applied to them
