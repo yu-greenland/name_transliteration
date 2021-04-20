@@ -1,5 +1,6 @@
 import name_transliteration.filtering as filter
 import name_transliteration.cleansing as cleanse
+import name_transliteration.model_trainer as model_trainer
 
 import pandas as pd
 
@@ -26,3 +27,11 @@ my_cleanser.cleanseData()
 # my_cleanser.saveData("arabic_data/", file_name="test_cleansed.json")
 
 my_cleanser.saveDataAsText()
+
+
+
+model_trainer = model_trainer.ModelTrainer(data_path = './zh_language_cleansed.txt', num_samples = 650)
+
+model_trainer.runWholeTrainProcess()
+
+model_trainer.predict("dabudong")

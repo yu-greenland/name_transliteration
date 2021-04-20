@@ -66,8 +66,10 @@ class Filter:
     uses regex to only keep the unicode characters that belong to the language
     """
     def removeNonLanguageCharacters(self, line):
-        clean_name = ''
+        clean_name = ""
         if self.language == 'zh':
+            # join characters separated by space
+            clean_name = " "
             match_list = regex.findall(r"(\p{Han})", line)
             clean_name = clean_name.join(match_list)
         elif self.language == 'es':

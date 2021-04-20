@@ -45,7 +45,7 @@ class ModelTrainer():
         target_characters = set()
         with open(self.data_path, "r", encoding="utf-8") as f:
             lines = f.read().split("\n")
-        for line in lines[: min(num_samples, len(lines) - 1)]:
+        for line in lines[: min(self.num_samples, len(lines) - 1)]:
             input_text, target_text = line.split("\t")
             # We use "tab" as the "start sequence" character
             # for the targets, and "\n" as "end sequence" character.
@@ -67,8 +67,8 @@ class ModelTrainer():
         self.max_decoder_seq_length = max([len(txt) for txt in target_texts])
 
         print("Number of samples:", len(input_texts))
-        print("Number of unique input tokens:", num_encoder_tokens)
-        print("Number of unique output tokens:", num_decoder_tokens)
+        print("Number of unique input tokens:", self.num_encoder_tokens)
+        print("Number of unique output tokens:", self.num_decoder_tokens)
         print("Max sequence length for inputs:", self.max_encoder_seq_length)
         print("Max sequence length for outputs:", self.max_decoder_seq_length)
 
@@ -76,13 +76,13 @@ class ModelTrainer():
         self.target_token_index = dict([(char, i) for i, char in enumerate(target_characters)])
 
         self.encoder_input_data = np.zeros(
-            (len(input_texts), self.max_encoder_seq_length, num_encoder_tokens), dtype="float32"
+            (len(input_texts), self.max_encoder_seq_length, self.num_encoder_tokens), dtype="float32"
         )
         self.decoder_input_data = np.zeros(
-            (len(input_texts), self.max_decoder_seq_length, num_decoder_tokens), dtype="float32"
+            (len(input_texts), self.max_decoder_seq_length, self.num_decoder_tokens), dtype="float32"
         )
         self.decoder_target_data = np.zeros(
-            (len(input_texts), self.max_decoder_seq_length, num_decoder_tokens), dtype="float32"
+            (len(input_texts), self.max_decoder_seq_length, self.num_decoder_tokens), dtype="float32"
         )
 
         # pretty sure this is building one hot vector representation of the data
@@ -202,11 +202,22 @@ class ModelTrainer():
             states_value = [h, c]
         return decoded_sentence
 
+    def runWholeTrainProcess(self):
+        # have to set data_path first
+        self.processData()
+
+        self.buildModel()
+
+        self.trainModel('mymodel')
+
+        self.createDecoderEncoder('mymodel')
+
+
     def predict(self, name:str):
         one_hot_vector = np.zeros(
             (1, self.max_encoder_seq_length, self.num_encoder_tokens), dtype="float32"
         )
         for t, char in enumerate(name):
-            one_hot_vector[0, t, input_token_index[char]] = 1.0
-        one_hot_vector[0, t + 1 :, input_token_index[" "]] = 1.0
+            one_hot_vector[0, t, self.input_token_index[char]] = 1.0
+        one_hot_vector[0, t + 1 :, self.input_token_index[" "]] = 1.0
         self.decode_sequence(one_hot_vector[0:1])

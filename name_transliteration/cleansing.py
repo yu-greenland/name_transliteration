@@ -55,14 +55,8 @@ class Cleanse:
     - adding spaces between when we think a word ends
     """
     def transformScreenName(self, line):
-        # strip numbers
-        text = re.sub(r'\d+', '', line)
-        # underscores to spaces
-        text = re.sub(r'_', ' ', text)
-        # add a space between lower case and upper case words
-        text = re.sub(r"(\w)([A-Z])", r"\1 \2", text)
         # also remove any white space before and after word
-        return text.strip()
+        return line.strip()
 
     """
     
