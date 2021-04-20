@@ -4,6 +4,7 @@ import editdistance
 import pykakasi
 import re
 import os
+import regex
 
 """
 should never be used before the data has been filtered first
@@ -15,12 +16,14 @@ class Cleanse:
     ar_translit = epitran.Epitran('ara-Arab')
     ja_translit = pykakasi.kakasi()
     en_translit = epitran.Epitran('eng-Latn')
+    fr_translit = epitran.Epitran('fra-Latn')
+
 
     """
     can supply a dataframe and an edit threshold on the creation of the Cleanse class
     if a dataframe is supplied, the language should be automatically set
     """
-    def __init__(self, language_dataframe:pd.DataFrame = None, edit_threshold = 0.6):
+    def __init__(self, language_dataframe:pd.DataFrame = None, edit_threshold = 0.7):
         if language_dataframe is None:
             self.language_dataframe = None
             self.language = None
@@ -31,15 +34,46 @@ class Cleanse:
             self.edit_threshold = edit_threshold
     
     """
+    applies transformations to the user name including
+    - stripping numbers
+    - replacing underscores with spaces
+    - adding spaces between when we think a word ends
+    """
+    def transformUserName(self, line):
+        # strip numbers
+        text = re.sub(r'\d+', '', line)
+        # underscores to spaces
+        text = re.sub(r'_', ' ', text)
+        # add a space between lower case and upper case words
+        text = re.sub(r"(\w)([A-Z])", r"\1 \2", text)
+        return text
 
+    """
+    applies transformations to the user name including
+    - stripping numbers
+    - replacing underscores with spaces
+    - adding spaces between when we think a word ends
+    """
+    def transformScreenName(self, line):
+        # strip numbers
+        text = re.sub(r'\d+', '', line)
+        # underscores to spaces
+        text = re.sub(r'_', ' ', text)
+        # add a space between lower case and upper case words
+        text = re.sub(r"(\w)([A-Z])", r"\1 \2", text)
+        # also remove any white space before and after word
+        return text.strip()
+
+    """
+    
     """
     def cleanseData(self):
         assert self.language_dataframe is not None, "language dataframe not yet defined, call the readData method before calling cleanseData"
         assert self.language is not None, "language not yet defined, call the readData method before calling cleanseData"
 
-        # strip numbers
-        self.language_dataframe['username'] = self.language_dataframe['username'].apply(lambda x: re.sub(r'\d+', '', x))
-        self.language_dataframe['screen_name'] = self.language_dataframe['screen_name'].apply(lambda x: re.sub(r'\d+', '', x))
+        # do transformations on username and screen name
+        self.language_dataframe['username'] = self.language_dataframe['username'].apply(self.transformUserName)
+        self.language_dataframe['screen_name'] = self.language_dataframe['screen_name'].apply(self.transformScreenName)
 
         # turn columns into series so we can enumerate through faster
         screen_name_series = self.language_dataframe['screen_name']
@@ -74,6 +108,7 @@ class Cleanse:
                     print(username,screen_name)
                     print(translit_username,translit_screen_name)
                     print(edit_distance)
+                    # pass
         
         self.language_dataframe = self.language_dataframe.drop(rows_over_threshold)
         self.language_dataframe.reset_index(drop=True, inplace=True)
@@ -88,6 +123,14 @@ class Cleanse:
     def evaluateEditDistance(self, name1:str, name2:str):
         avg_length = (len(name1) + len(name2) / 2)
         return editdistance.eval(name1, name2) / avg_length
+    
+    """
+    sometimes i also just want to see how the normal edit distance would behave
+    """
+    def normalEditDistance(self, name1:str, name2:str):
+        # also have to set the edit threshold to this format scale
+        self.edit_threshold = 4
+        return editdistance.eval(name1, name2)
 
     """
     my hope with having a dedicated translit function for user names is that for different
@@ -116,6 +159,8 @@ class Cleanse:
                 return self.es_translit.transliterate(name)
             elif self.language == 'ar':
                 return self.ar_translit.transliterate(name)
+            elif self.language == 'fr':
+                return self.fr_translit.transliterate(name)
             else:
                 print("language not supported")
                 return ""
@@ -163,3 +208,14 @@ class Cleanse:
     """
     def getDataFrame(self) -> pd.DataFrame:
         return self.language_dataframe
+
+    """
+    saves language dataframe as text
+    easier to load into keras this way
+    """
+    def saveDataAsText(self, out_path='./', file_name=None):
+        just_names_df = self.language_dataframe[['username','screen_name']]
+        if file_name is None:
+            just_names_df.to_csv(out_path+self.language+'_language_cleansed.txt', header=None, index=None, sep='\t', mode='a')
+        else:
+            just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='a')

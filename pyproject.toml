@@ -10,6 +10,8 @@ epitran = "^1.9"
 pykakasi = "^2.0.6"
 editdistance = "^0.5.3"
 pandas = "^1.2.4"
+tensorflow = "^2.4.1"
+regex = "^2021.4.4"
 
 [tool.poetry.dev-dependencies]
 

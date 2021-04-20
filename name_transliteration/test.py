@@ -3,9 +3,11 @@ import name_transliteration.cleansing as cleanse
 
 import pandas as pd
 
-my_filter = filter.Filter("ar")
+my_filter = filter.Filter("zh")
 
-my_filter.filterData("./../data_small/")
+my_filter.filterData("./../data/")
+
+my_filter.saveDataAsText()
 
 # my_filter.saveData("chinese_data/")
 
@@ -21,4 +23,6 @@ my_cleanser.cleanseData()
 
 # print(my_cleanser.getDataFrame().head())
 
-my_cleanser.saveData("arabic_data/", file_name="test_cleansed.json")
+# my_cleanser.saveData("arabic_data/", file_name="test_cleansed.json")
+
+my_cleanser.saveDataAsText()

@@ -6,39 +6,52 @@ import gzip
 import json
 import os
 import pandas as pd
+import regex
 
 
-"""
-A filter class
-Part of the pipeline
-"""
 class Filter:
     """
-    when creating a new filter object, you first set the language you are filtering upon
-    the language is a string specifying the language we want to filter on, note this must be in ISO 639-2 Language Code format
-    this language will be used by the filter functions
+    Represents a filter class part of the overall name transliteration training pipeline
+
+
+    language : str
+        the language is what is going to be filtered upon, this must be in ISO 639-2 Language Code format
+    
+    contains the language we are filtering on
+    contains the df which is just the raw data loaded in
+    contains the language dataframe which is the filtered df
+
     """
     def __init__(self, language:str):
         self.language = language
         self.language_dataframe = None
 
+
     """
     top level function that performs the entire filtering process
-    
-    data_path: a string, the path to the folder containig the Twitter data
-    return: void, sets the language_dataframe variable
+
+    Parameters
+    ----------
+    data_path : str
+        a string, the path to the folder containig the Twitter data
+
+    Returns
+    ----------
+    language_dataframe : pd.DataFrame
+        the DataFrame belonging to the class
+        also sets the language_dataframe variable
     """
     def filterData(self, data_path:str):
-        # read data from the data_path
         twitter_data_list = self.readData(data_path)
         twitter_data = pd.DataFrame(twitter_data_list)
 
         # filter down to specified language, the language must be in ISO 639-2 Language Code format
         df = twitter_data[twitter_data["language"] == self.language]
 
-        # remove emojis
-        df["screen_name"].apply(self.deEmojify)
-        # remove all rows where the screen_name is empty, this removes names which are just emojis
+        # remove characters in screen name that do not belong to the unicode of the language
+        df['screen_name'] = df['screen_name'].apply(self.removeNonLanguageCharacters)
+
+        # remove all rows where the screen_name is empty, this removes names which do not have any characters in the unicode of the language
         df = df[df.screen_name != '']
         df.dropna(inplace=True)
         df.drop_duplicates()
@@ -46,6 +59,28 @@ class Filter:
 
         # assign the filtered data frame to the class level variable
         self.language_dataframe = df
+        return self.language_dataframe
+
+    """
+    very exerimental right now, like everything here
+    uses regex to only keep the unicode characters that belong to the language
+    """
+    def removeNonLanguageCharacters(self, line):
+        clean_name = ''
+        if self.language == 'zh':
+            match_list = regex.findall(r"(\p{Han})", line)
+            clean_name = clean_name.join(match_list)
+        elif self.language == 'es':
+            pass
+        elif self.language == 'ar':
+            pass
+        elif self.language == 'ja':
+            pass
+        elif self.language == 'fr':
+            pass
+        else:
+            print("language not supported")
+        return clean_name
 
     """
     reads in data and additionally extracts the fields we are interested in
@@ -74,25 +109,6 @@ class Filter:
         return df_list
 
     """
-    removes emojis
-    """
-    def deEmojify(self, text):
-        regrex_pattern = re.compile(
-        u"(\ud83d[\ude00-\ude4f])|"  # emoticons
-        u"(\ud83c[\udf00-\uffff])|"  # symbols & pictographs (1 of 2)
-        u"(\ud83d[\u0000-\uddff])|"  # symbols & pictographs (2 of 2)
-        u"(\ud83d[\ude80-\udeff])|"  # transport & map symbols
-        u"(\ud83c[\udde0-\uddff])"  # flags (iOS)
-        "+", flags=re.UNICODE)
-        return regrex_pattern.sub(r'',text)
-
-    """
-    
-    """
-    def keepLanguage(self, text):
-        pass
-
-    """
     saves the language dataframe as json
     creates the out_path folder if it does not exist
 
@@ -107,9 +123,27 @@ class Filter:
             self.language_dataframe.to_json(out_path + '/' +self.language+'_language_filtered.json',orient="records")
         else:
             self.language_dataframe.to_json(out_path + '/' + file_name,orient="records")
+    
+    """
+    saves language dataframe as text
+    easier to read and
+    easier to load into keras this way
+    """
+    def saveDataAsText(self, out_path='./', file_name=None):
+        just_names_df = self.language_dataframe[['username','screen_name']]
+        if file_name is None:
+            just_names_df.to_csv(out_path+self.language+'_language_filtered.txt', header=None, index=None, sep='\t', mode='a')
+        else:
+            just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='a')
 
     """
     return the language data frame
     """
     def getDataFrame(self):
         return self.language_dataframe
+    
+    """
+    sets the language data frame
+    """
+    def setDataFrame(self, df:pd.DataFrame):
+        self.language_dataframe = df
