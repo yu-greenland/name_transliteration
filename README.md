@@ -10,6 +10,7 @@ To do:
 - ~~when a name is "LikeThis" separate into "Like This", ie. add spaces when appropriate~~
 - remove words such as "Mr" and "Sir"
 - get model to work properly lol
+- currently when saving to text file, it appends to the end, make it not do that
 
 problems
 
