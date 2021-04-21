@@ -73,13 +73,24 @@ class Filter:
             match_list = regex.findall(r"(\p{Han})", line)
             clean_name = clean_name.join(match_list)
         elif self.language == 'es':
-            pass
+            match_list = regex.findall(r"(\p{Latin})", line)
+            clean_name = clean_name.join(match_list)
         elif self.language == 'ar':
-            pass
+            match_list = regex.findall(r"(\p{Arabic})", line)
+            clean_name = clean_name.join(match_list)
         elif self.language == 'ja':
-            pass
+            # join characters separated by space
+            clean_name = " "
+            match_list = regex.findall(r"(\p{Katakana}|\p{Hiragana}|\p{Han})", line)
+            clean_name = clean_name.join(match_list)
         elif self.language == 'fr':
-            pass
+            match_list = regex.findall(r"(\p{Latin})", line)
+            clean_name = clean_name.join(match_list)
+        elif self.language == 'ko':
+            # join characters separated by space
+            clean_name = " "
+            match_list = regex.findall(r"(\p{Hangul}|\p{Han})", line)
+            clean_name = clean_name.join(match_list)
         else:
             print("language not supported")
         return clean_name
@@ -134,9 +145,9 @@ class Filter:
     def saveDataAsText(self, out_path='./', file_name=None):
         just_names_df = self.language_dataframe[['username','screen_name']]
         if file_name is None:
-            just_names_df.to_csv(out_path+self.language+'_language_filtered.txt', header=None, index=None, sep='\t', mode='a')
+            just_names_df.to_csv(out_path+self.language+'_language_filtered.txt', header=None, index=None, sep='\t', mode='w')
         else:
-            just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='a')
+            just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='w')
 
     """
     return the language data frame

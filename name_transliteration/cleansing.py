@@ -5,6 +5,7 @@ import pykakasi
 import re
 import os
 import regex
+import ko_pron
 
 """
 should never be used before the data has been filtered first
@@ -17,6 +18,7 @@ class Cleanse:
     ja_translit = pykakasi.kakasi()
     en_translit = epitran.Epitran('eng-Latn')
     fr_translit = epitran.Epitran('fra-Latn')
+    ko_translit = epitran.Epitran('')
 
 
     """
@@ -155,6 +157,9 @@ class Cleanse:
                 return self.ar_translit.transliterate(name)
             elif self.language == 'fr':
                 return self.fr_translit.transliterate(name)
+            elif self.language == 'ko':
+                # no clue what the second argument does... but it is needed
+                return ko_pron.romanise(name, "mr")
             else:
                 print("language not supported")
                 return ""
@@ -210,6 +215,6 @@ class Cleanse:
     def saveDataAsText(self, out_path='./', file_name=None):
         just_names_df = self.language_dataframe[['username','screen_name']]
         if file_name is None:
-            just_names_df.to_csv(out_path+self.language+'_language_cleansed.txt', header=None, index=None, sep='\t', mode='a')
+            just_names_df.to_csv(out_path+self.language+'_language_cleansed.txt', header=None, index=None, sep='\t', mode='w')
         else:
-            just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='a')
+            just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='w')
