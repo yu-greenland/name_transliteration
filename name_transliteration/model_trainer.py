@@ -204,6 +204,7 @@ class ModelTrainer():
 
     def runWholeTrainProcess(self):
         # have to set data_path first
+        assert self.data_path is not None, "data_path has to be set first!"
         self.processData()
 
         self.buildModel()

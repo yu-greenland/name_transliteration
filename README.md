@@ -26,6 +26,7 @@ languages supported
 - Arabic
 - Japanese
 - French
+- Korean
 
 ## Using the classes
 
