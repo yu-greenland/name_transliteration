@@ -5,18 +5,17 @@ need to install fslite for epitran to work
 
 To do:
 
-- implement extracting unicode ranges instead of removing emojis (<https://www.ling.upenn.edu/courses/Spring_2003/ling538/UnicodeRanges.html>)
-  - done for Chinese, extracting Han characters
+- ~~implement extracting unicode ranges instead of removing emojis (<https://www.ling.upenn.edu/courses/Spring_2003/ling538/UnicodeRanges.html>)~~
 - ~~make underscores turn into spaces in the cleansing stage~~
 - ~~when a name is "LikeThis" separate into "Like This", ie. add spaces when appropriate~~
 - remove words such as "Mr" and "Sir"
-- get model to work properly lol
+- ~~get model to work properly lol~~
 - ~~currently when saving to text file, it appends to the end, make it not do that~~
 - maybe look at substrings of screen name and user name to see if they can be a better match than using the whole screen name and user name
 
 problems
 
-- poetry added packages are not working as expected, is not found when run in poetry shell, work around is to directly call the virtual environment python on the python program I want to run
+- ~~poetry added packages are not working as expected, is not found when run in poetry shell, work around is to directly call the virtual environment python on the python program I want to run~~
 - japanese does not capture the Chōonpu, don't know why
 
 languages supported
@@ -68,6 +67,6 @@ model_trainer = model_trainer.ModelTrainer(data_path = './zh_language_cleansed.t
 # run the whole training process
 model_trainer.runWholeTrainProcess()
 
-# test what it has learnt, not quite there yet :)
+# test what it has learnt
 model_trainer.predict("dabudong")
 ```

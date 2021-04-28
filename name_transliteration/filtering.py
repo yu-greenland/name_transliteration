@@ -18,7 +18,6 @@ class Filter:
         the language is what is going to be filtered upon, this must be in ISO 639-2 Language Code format
     
     contains the language we are filtering on
-    contains the df which is just the raw data loaded in
     contains the language dataframe which is the filtered df
 
     """
@@ -35,14 +34,17 @@ class Filter:
     data_path : str
         a string, the path to the folder containig the Twitter data
 
+    num_files : int
+        the number of files that should be taken in, default it takes in all files in a folder
+
     Returns
     ----------
     language_dataframe : pd.DataFrame
         the DataFrame belonging to the class
         also sets the language_dataframe variable
     """
-    def filterData(self, data_path:str):
-        twitter_data_list = self.readData(data_path)
+    def filterData(self, data_path:str, num_files:int = None):
+        twitter_data_list = self.readData(data_path, num_files=num_files)
         twitter_data = pd.DataFrame(twitter_data_list)
 
         # filter down to specified language, the language must be in ISO 639-2 Language Code format
@@ -79,8 +81,6 @@ class Filter:
             match_list = regex.findall(r"(\p{Arabic})", line)
             clean_name = clean_name.join(match_list)
         elif self.language == 'ja':
-            # join characters separated by space
-            clean_name = " "
             match_list = regex.findall(r"(\p{Katakana}|\p{Hiragana}|\p{Han})", line)
             clean_name = clean_name.join(match_list)
         elif self.language == 'fr':
@@ -102,9 +102,12 @@ class Filter:
     data_path: a string, the path to the folder containig the Twitter data
     returns a list of dictionaries
     """
-    def readData(self, data_path:str) -> list:
+    def readData(self, data_path, num_files:int=None):
         # the list that is going to contain all the dataframe information
         df_list = []
+
+        # to keep track of how many files have been read in
+        count = 0
 
         # finds all files in the data path and combines them together
         for file in os.listdir(data_path):    
@@ -119,6 +122,11 @@ class Filter:
                             "language": json_line["lang"]
                         }
                         df_list.append(filtered_dict)
+            # stop taking in files if num_files is defined
+            if num_files is not None:
+                if count == num_files:
+                    break
+                count = count + 1
         return df_list
 
     """
@@ -127,7 +135,7 @@ class Filter:
 
     has an optional argument to be able to have a custom file name
     """
-    def saveData(self, out_path:str, file_name=None):
+    def saveData(self, out_path, file_name=None):
         try:
             os.mkdir(out_path)
         except OSError as error:
@@ -143,6 +151,7 @@ class Filter:
     easier to load into keras this way
     """
     def saveDataAsText(self, out_path='./', file_name=None):
+        print("Saving filtered names. " + str(len(self.language_dataframe)) + " number of rows. ")
         just_names_df = self.language_dataframe[['username','screen_name']]
         if file_name is None:
             just_names_df.to_csv(out_path+self.language+'_language_filtered.txt', header=None, index=None, sep='\t', mode='w')
@@ -158,5 +167,5 @@ class Filter:
     """
     sets the language data frame
     """
-    def setDataFrame(self, df:pd.DataFrame):
+    def setDataFrame(self, df):
         self.language_dataframe = df

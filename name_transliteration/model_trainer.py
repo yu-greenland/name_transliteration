@@ -1,8 +1,10 @@
 import numpy as np
 import tensorflow as tf
 from tensorflow import keras
+import matplotlib.pyplot as plt
 
 class ModelTrainer():
+    
     """
     edit variables on start up if need be
     """
@@ -26,7 +28,7 @@ class ModelTrainer():
         self.decoder_model = None
         self.reverse_target_char_index = None
         self.max_decoder_seq_length = None
-
+        self.history = None
     
     def setNumSamples(self, num_samples:int):
         self.num_samples = num_samples
@@ -60,6 +62,7 @@ class ModelTrainer():
                     target_characters.add(char)
 
         input_characters = sorted(list(input_characters))
+        target_characters.add(" ")
         target_characters = sorted(list(target_characters))
         self.num_encoder_tokens = len(input_characters)
         self.num_decoder_tokens = len(target_characters)
@@ -128,7 +131,7 @@ class ModelTrainer():
         self.model.compile(
             optimizer="rmsprop", loss="categorical_crossentropy", metrics=["accuracy"]
         )
-        self.model.fit(
+        self.history = self.model.fit(
             [self.encoder_input_data, self.decoder_input_data],
             self.decoder_target_data,
             batch_size=self.batch_size,
@@ -209,9 +212,9 @@ class ModelTrainer():
 
         self.buildModel()
 
-        self.trainModel('mymodel')
+        self.trainModel('model_'+str(self.epochs))
 
-        self.createDecoderEncoder('mymodel')
+        self.createDecoderEncoder('model_'+str(self.epochs))
 
 
     def predict(self, name:str):
@@ -221,4 +224,24 @@ class ModelTrainer():
         for t, char in enumerate(name):
             one_hot_vector[0, t, self.input_token_index[char]] = 1.0
         one_hot_vector[0, t + 1 :, self.input_token_index[" "]] = 1.0
-        self.decode_sequence(one_hot_vector[0:1])
+        return self.decode_sequence(one_hot_vector[0:1])
+
+    def plotAccuracy(self):
+        # summarize history for accuracy
+        plt.plot(self.history.history['accuracy'])
+        plt.plot(self.history.history['val_accuracy'])
+        plt.title('model accuracy')
+        plt.ylabel('accuracy')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()
+    
+    def plotLoss(self):
+        # summarize history for loss
+        plt.plot(self.history.history['loss'])
+        plt.plot(self.history.history['val_loss'])
+        plt.title('model loss')
+        plt.ylabel('loss')
+        plt.xlabel('epoch')
+        plt.legend(['train', 'test'], loc='upper left')
+        plt.show()

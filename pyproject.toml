@@ -5,7 +5,7 @@ description = "A pipeline for filtering, cleansing and training and language tra
 authors = ["yug <yu.greenland@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "3.8*"
 epitran = "^1.9"
 pykakasi = "^2.0.6"
 editdistance = "^0.5.3"
@@ -13,8 +13,13 @@ pandas = "^1.2.4"
 tensorflow = "^2.4.1"
 regex = "^2021.4.4"
 ko-pron = "^1.3"
+matplotlib = "^3.4.1"
+polyglot = "^16.7.4"
+Morfessor = "^2.0.6"
+conda = "^4.3.16"
 
 [tool.poetry.dev-dependencies]
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

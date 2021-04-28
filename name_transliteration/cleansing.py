@@ -18,14 +18,14 @@ class Cleanse:
     ja_translit = pykakasi.kakasi()
     en_translit = epitran.Epitran('eng-Latn')
     fr_translit = epitran.Epitran('fra-Latn')
-    ko_translit = epitran.Epitran('')
 
 
     """
     can supply a dataframe and an edit threshold on the creation of the Cleanse class
     if a dataframe is supplied, the language should be automatically set
+    the default edit_threshold is 0.1, but it can be tuned and changed according to how strict you want the name pair similarities to be
     """
-    def __init__(self, language_dataframe:pd.DataFrame = None, edit_threshold = 0.7):
+    def __init__(self, language_dataframe:pd.DataFrame = None, edit_threshold = 0.1):
         if language_dataframe is None:
             self.language_dataframe = None
             self.language = None
@@ -48,7 +48,7 @@ class Cleanse:
         text = re.sub(r'_', ' ', text)
         # add a space between lower case and upper case words
         text = re.sub(r"(\w)([A-Z])", r"\1 \2", text)
-        return text
+        return text.lower().strip()
 
     """
     applies transformations to the user name including
@@ -58,7 +58,7 @@ class Cleanse:
     """
     def transformScreenName(self, line):
         # also remove any white space before and after word
-        return line.strip()
+        return line.lower().strip()
 
     """
     
@@ -91,10 +91,12 @@ class Cleanse:
             # print(translit_username,translit_screen_name)
 
             # if the transliteration did nothing
-            if translit_username == username:
+            if translit_username == username and self.language != 'ja':
+                # there is a problem here, if it is japenese this would always be the case
                 rows_over_threshold.append(index)
             elif translit_screen_name == screen_name:
                 rows_over_threshold.append(index)
+                # pass
             else:
                 # use edit distance with regards to string length
                 edit_distance = self.evaluateEditDistance(translit_username, translit_screen_name)
@@ -105,7 +107,7 @@ class Cleanse:
                     print(translit_username,translit_screen_name)
                     print(edit_distance)
                     # pass
-        
+
         self.language_dataframe = self.language_dataframe.drop(rows_over_threshold)
         self.language_dataframe.reset_index(drop=True, inplace=True)
     
@@ -125,7 +127,7 @@ class Cleanse:
     """
     def normalEditDistance(self, name1:str, name2:str):
         # also have to set the edit threshold to this format scale
-        self.edit_threshold = 4
+        self.edit_threshold = 5
         return editdistance.eval(name1, name2)
 
     """
@@ -213,6 +215,7 @@ class Cleanse:
     easier to load into keras this way
     """
     def saveDataAsText(self, out_path='./', file_name=None):
+        print("Saving cleansed names. " + str(len(self.language_dataframe)) + " number of rows. ")
         just_names_df = self.language_dataframe[['username','screen_name']]
         if file_name is None:
             just_names_df.to_csv(out_path+self.language+'_language_cleansed.txt', header=None, index=None, sep='\t', mode='w')

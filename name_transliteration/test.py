@@ -4,10 +4,8 @@ import name_transliteration.model_trainer as model_trainer
 
 import pandas as pd
 
-my_filter = filter.Filter("ko")
-
-my_filter.filterData("./../data_small/")              
-
+my_filter = filter.Filter("zh")
+my_filter.filterData("./data_small/", 1)
 my_filter.saveDataAsText()
 
 # my_filter.saveData("chinese_data/")
