@@ -14,7 +14,7 @@ To do:
 - maybe look at substrings of screen name and user name to see if they can be a better match than using the whole screen name and user name
 - from cleansing to model_trainer, I should be passing a tensor instead of saving a text file to disk
 - automatically detect the size of the file passed into the model_trainer, using this automatically split data into testing and training, perhaps use sklearn train_test_split function
-- create evaluation class
+-  have a way of saving the model and loading it back up again so I don't have to re-train it
 - make model give a couple of predictions instead of just one
 
 problems

@@ -8,12 +8,12 @@ class ModelTrainer():
     """
     edit variables on start up if need be
     """
-    def __init__(self, batch_size=64, epochs=10, latent_dim = 256, data_path = None, num_samples = None):
+    def __init__(self, batch_size=64, epochs=10, latent_dim = 256, data_path = None, language="unknown"):
         self.batch_size = batch_size
         self.epochs = epochs
         self.latent_dim = latent_dim
         self.data_path = data_path
-        self.num_samples = num_samples
+        self.language = language
 
         # these are defined later on
         self.num_encoder_tokens = None
@@ -29,9 +29,7 @@ class ModelTrainer():
         self.reverse_target_char_index = None
         self.max_decoder_seq_length = None
         self.history = None
-    
-    def setNumSamples(self, num_samples:int):
-        self.num_samples = num_samples
+        self.actual_num_samples = None
     
     def setDataPath(self, data_path:str):
         self.data_path = data_path
@@ -47,7 +45,7 @@ class ModelTrainer():
         target_characters = set()
         with open(self.data_path, "r", encoding="utf-8") as f:
             lines = f.read().split("\n")
-        for line in lines[: min(self.num_samples, len(lines) - 1)]:
+        for line in lines[: min(9999999, len(lines) - 1)]:
             input_text, target_text = line.split("\t")
             # We use "tab" as the "start sequence" character
             # for the targets, and "\n" as "end sequence" character.
@@ -70,6 +68,7 @@ class ModelTrainer():
         self.max_decoder_seq_length = max([len(txt) for txt in target_texts])
 
         print("Number of samples:", len(input_texts))
+        self.actual_num_samples = len(input_texts)
         print("Number of unique input tokens:", self.num_encoder_tokens)
         print("Number of unique output tokens:", self.num_decoder_tokens)
         print("Max sequence length for inputs:", self.max_encoder_seq_length)
@@ -212,9 +211,9 @@ class ModelTrainer():
 
         self.buildModel()
 
-        self.trainModel('model_'+str(self.epochs))
+        self.trainModel(self.language + '_model_'+str(self.epochs))
 
-        self.createDecoderEncoder('model_'+str(self.epochs))
+        self.createDecoderEncoder(self.language + '_model_'+str(self.epochs))
 
 
     def predict(self, name:str):
@@ -235,6 +234,7 @@ class ModelTrainer():
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
         plt.show()
+        plt.savefig(self.language+"_accuracy_"+str(self.actual_num_samples)+"_samples_"+str(self.epochs)+"_epochs.png")
     
     def plotLoss(self):
         # summarize history for loss
@@ -245,3 +245,4 @@ class ModelTrainer():
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
         plt.show()
+        plt.savefig(self.language+"_loss_"+str(self.actual_num_samples)+"_samples_"+str(self.epochs)+"_epochs.png")
