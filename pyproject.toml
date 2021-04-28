@@ -17,6 +17,7 @@ matplotlib = "^3.4.1"
 polyglot = "^16.7.4"
 Morfessor = "^2.0.6"
 conda = "^4.3.16"
+sklearn = "^0.0"
 
 [tool.poetry.dev-dependencies]
 jupyter = "^1.0.0"

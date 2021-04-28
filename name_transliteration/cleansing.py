@@ -61,9 +61,9 @@ class Cleanse:
         return line.lower().strip()
 
     """
-    
+    set verbose to True to print the name pairs and threshold that gets past the cleansing stage
     """
-    def cleanseData(self):
+    def cleanseData(self, verbose=False):
         assert self.language_dataframe is not None, "language dataframe not yet defined, call the readData method before calling cleanseData"
         assert self.language is not None, "language not yet defined, call the readData method before calling cleanseData"
 
@@ -103,10 +103,10 @@ class Cleanse:
                 if edit_distance > self.edit_threshold:
                     rows_over_threshold.append(index)
                 else:
-                    print(username,screen_name)
-                    print(translit_username,translit_screen_name)
-                    print(edit_distance)
-                    # pass
+                    if verbose:
+                        print(username,screen_name)
+                        print(translit_username,translit_screen_name)
+                        print(edit_distance)
 
         self.language_dataframe = self.language_dataframe.drop(rows_over_threshold)
         self.language_dataframe.reset_index(drop=True, inplace=True)
@@ -221,3 +221,6 @@ class Cleanse:
             just_names_df.to_csv(out_path+self.language+'_language_cleansed.txt', header=None, index=None, sep='\t', mode='w')
         else:
             just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='w')
+    
+    def getCleansedData(self):
+        return self.language_dataframe[['username','screen_name']].to_numpy()

@@ -81,7 +81,7 @@ class Filter:
             match_list = regex.findall(r"(\p{Arabic})", line)
             clean_name = clean_name.join(match_list)
         elif self.language == 'ja':
-            match_list = regex.findall(r"(\p{Katakana}|\p{Hiragana}|\p{Han})", line)
+            match_list = regex.findall(r"(\p{Katakana}|\p{Hiragana}|\p{Han}|ー)", line)
             clean_name = clean_name.join(match_list)
         elif self.language == 'fr':
             match_list = regex.findall(r"(\p{Latin})", line)

@@ -12,18 +12,28 @@ To do:
 - ~~get model to work properly lol~~
 - ~~currently when saving to text file, it appends to the end, make it not do that~~
 - maybe look at substrings of screen name and user name to see if they can be a better match than using the whole screen name and user name
+- from cleansing to model_trainer, I should be passing a tensor instead of saving a text file to disk
+- automatically detect the size of the file passed into the model_trainer, using this automatically split data into testing and training, perhaps use sklearn train_test_split function
+- create evaluation class
+- make model give a couple of predictions instead of just one
 
 problems
 
 - ~~poetry added packages are not working as expected, is not found when run in poetry shell, work around is to directly call the virtual environment python on the python program I want to run~~
-- japanese does not capture the Chōonpu, don't know why
+- ~~japanese does not capture the Chōonpu, don't know why, manually added it into the regex~~
+
+questions
+
+- does the current workflow of going from raw Twitter data to model make sense? ie. are the inputs and outputs of each component like you imagined?
+- how to get polyglot to work
+- i shouldn't need to have an attention mechanism in my model right? because i'm not translating sentences, i'm transliterating words
 
 languages supported
 
 - Chinese
 - Spanish
 - Arabic
-- Japanese
+- Japanese (does quite well tbh)
 - French
 - Korean
 
