@@ -115,4 +115,4 @@ To obtain this optimal cleansing point, we test over a range of edit-distances (
 
 We want to capture the Twitter data to the point where name pairs are not transliterations.
 
-
+My hypothesis is that there is an "optimal" set of parameters in the data cleansing stage to achieve this. I define optimal cleansing as letting through all name pairs that can be regarded as a transliteration while not letting through name pairs that are in no way transliterations. 
