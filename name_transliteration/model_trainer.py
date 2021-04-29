@@ -59,6 +59,7 @@ class ModelTrainer():
                 if char not in target_characters:
                     target_characters.add(char)
 
+        input_characters.add(" ")
         input_characters = sorted(list(input_characters))
         target_characters.add(" ")
         target_characters = sorted(list(target_characters))
@@ -225,7 +226,7 @@ class ModelTrainer():
         one_hot_vector[0, t + 1 :, self.input_token_index[" "]] = 1.0
         return self.decode_sequence(one_hot_vector[0:1])
 
-    def plotAccuracy(self):
+    def plotAccuracy(self, file_name = None):
         # summarize history for accuracy
         plt.plot(self.history.history['accuracy'])
         plt.plot(self.history.history['val_accuracy'])
@@ -234,9 +235,12 @@ class ModelTrainer():
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
         plt.show()
-        plt.savefig(self.language+"_accuracy_"+str(self.actual_num_samples)+"_samples_"+str(self.epochs)+"_epochs.png")
+        if file_name is None:
+            plt.savefig(self.language+"_accuracy_"+str(self.actual_num_samples)+"_samples_"+str(self.epochs)+"_epochs.png")
+        else:
+            plt.savefig(file_name)
     
-    def plotLoss(self):
+    def plotLoss(self, file_name = None):
         # summarize history for loss
         plt.plot(self.history.history['loss'])
         plt.plot(self.history.history['val_loss'])
@@ -245,4 +249,7 @@ class ModelTrainer():
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
         plt.show()
-        plt.savefig(self.language+"_loss_"+str(self.actual_num_samples)+"_samples_"+str(self.epochs)+"_epochs.png")
+        if file_name is None:
+            plt.savefig(self.language+"_loss_"+str(self.actual_num_samples)+"_samples_"+str(self.epochs)+"_epochs.png")
+        else:
+            plt.savefig(file_name)

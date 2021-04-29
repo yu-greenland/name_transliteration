@@ -199,9 +199,9 @@ class Cleanse:
 
     """
     set the edit threshold
-    must be an integer
+    must be a number
     """
-    def setEditThreshold(self, edit_threshold:int):
+    def setEditThreshold(self, edit_threshold):
         self.edit_threshold = edit_threshold
     
     """
@@ -215,11 +215,13 @@ class Cleanse:
     easier to load into keras this way
     """
     def saveDataAsText(self, out_path='./', file_name=None):
-        print("Saving cleansed names. " + str(len(self.language_dataframe)) + " number of rows. ")
         just_names_df = self.language_dataframe[['username','screen_name']]
         if file_name is None:
-            just_names_df.to_csv(out_path+self.language+'_language_cleansed.txt', header=None, index=None, sep='\t', mode='w')
+            file_name = self.language+'_'+str(int(self.edit_threshold*10))+'_edit_distance_language_cleansed.txt'
+            print("Saving cleansed names as: " + file_name + " " + str(len(self.language_dataframe)) + " number of rows. ")
+            just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='w')
         else:
+            print("Saving cleansed names as: " + file_name + " " + str(len(self.language_dataframe)) + " number of rows. ")
             just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='w')
     
     def getCleansedData(self):
