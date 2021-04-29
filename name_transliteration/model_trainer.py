@@ -136,7 +136,7 @@ class ModelTrainer():
             self.decoder_target_data,
             batch_size=self.batch_size,
             epochs=self.epochs,
-            validation_split=0.2,
+            validation_split=0.3,
         )
         # Save model
         self.model.save(model_name)
@@ -214,7 +214,7 @@ class ModelTrainer():
 
         self.trainModel(self.language + '_model_'+str(self.epochs))
 
-        self.createDecoderEncoder(self.language + '_model_'+str(self.epochs))
+        # self.createDecoderEncoder(self.language + '_model_'+str(self.epochs))
 
 
     def predict(self, name:str):
@@ -234,11 +234,11 @@ class ModelTrainer():
         plt.ylabel('accuracy')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.show()
         if file_name is None:
             plt.savefig(self.language+"_accuracy_"+str(self.actual_num_samples)+"_samples_"+str(self.epochs)+"_epochs.png")
         else:
             plt.savefig(file_name)
+        plt.show()
     
     def plotLoss(self, file_name = None):
         # summarize history for loss
@@ -248,8 +248,8 @@ class ModelTrainer():
         plt.ylabel('loss')
         plt.xlabel('epoch')
         plt.legend(['train', 'test'], loc='upper left')
-        plt.show()
         if file_name is None:
             plt.savefig(self.language+"_loss_"+str(self.actual_num_samples)+"_samples_"+str(self.epochs)+"_epochs.png")
         else:
             plt.savefig(file_name)
+        plt.show()

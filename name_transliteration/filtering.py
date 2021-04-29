@@ -107,7 +107,7 @@ class Filter:
         df_list = []
 
         # to keep track of how many files have been read in
-        count = 0
+        count = 1
 
         # finds all files in the data path and combines them together
         for file in os.listdir(data_path):    
