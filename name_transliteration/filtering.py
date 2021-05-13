@@ -7,7 +7,7 @@ import json
 import os
 import pandas as pd
 import regex
-
+pd.options.mode.chained_assignment = None
 
 class Filter:
     """
@@ -61,7 +61,7 @@ class Filter:
 
         # assign the filtered data frame to the class level variable
         self.language_dataframe = df
-        return self.language_dataframe
+        # return self.language_dataframe
 
     """
     very exerimental right now, like everything here
@@ -147,8 +147,7 @@ class Filter:
     
     """
     saves language dataframe as text
-    easier to read and
-    easier to load into keras this way
+    easier to read
     """
     def saveDataAsText(self, out_path='./', file_name=None):
         print("Saving filtered names. " + str(len(self.language_dataframe)) + " number of rows. ")

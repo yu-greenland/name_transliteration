@@ -6,11 +6,13 @@ import re
 import os
 import regex
 import ko_pron
+from sklearn.model_selection import train_test_split
+import numpy as np
 
 """
 should never be used before the data has been filtered first
 """
-class Cleanse:
+class Cleanser:
     # the transliteration objects live here
     zh_translit = epitran.Epitran('cmn-Hans', cedict_file='cedict_ts.u8')
     es_translit = epitran.Epitran('spa-Latn')
@@ -25,15 +27,21 @@ class Cleanse:
     if a dataframe is supplied, the language should be automatically set
     the default edit_threshold is 0.1, but it can be tuned and changed according to how strict you want the name pair similarities to be
     """
-    def __init__(self, language_dataframe:pd.DataFrame = None, edit_threshold = 0.1):
-        if language_dataframe is None:
-            self.language_dataframe = None
-            self.language = None
-            self.edit_threshold = edit_threshold
-        else:
-            self.language_dataframe = language_dataframe
-            self.language = language_dataframe["language"].get(0)
-            self.edit_threshold = edit_threshold
+    def __init__(self, initial_dataframe:pd.DataFrame = None, training_dataframe = None, testing_dataframe = None, edit_threshold = 0):
+        self.initial_dataframe = initial_dataframe
+        self.training_dataframe = training_dataframe
+        self.testing_dataframe = testing_dataframe
+        self.testing_dataframe_cleanse_0 = None
+        self.testing_dataframe_cleanse_0_1 = None
+        self.testing_dataframe_cleanse_0_25 = None
+        self.language = None
+        self.edit_threshold = edit_threshold
+
+        # used in the pseudo random number generator
+        self.seed = 42
+
+        # used to count how many lines have been read by the cleanser
+        self.line_counter = 0
     
     """
     applies transformations to the user name including
@@ -60,20 +68,26 @@ class Cleanse:
         # also remove any white space before and after word
         return line.lower().strip()
 
+
+
+
     """
-    set verbose to True to print the name pairs and threshold that gets past the cleansing stage
+    given a dataframe and edit threshold, cleanses and returns dataframe
     """
-    def cleanseData(self, verbose=False):
-        assert self.language_dataframe is not None, "language dataframe not yet defined, call the readData method before calling cleanseData"
+    def cleanseData(self, data_frame:pd.DataFrame, edit_threshold, verbose=False):
+        assert data_frame is not None, "language dataframe not yet defined, call the readData method before calling cleanseData"
+        self.language = data_frame["language"].get(0)
         assert self.language is not None, "language not yet defined, call the readData method before calling cleanseData"
 
+        # data_frame.reset_index(inplace=True)
+
         # do transformations on username and screen name
-        self.language_dataframe['username'] = self.language_dataframe['username'].apply(self.transformUserName)
-        self.language_dataframe['screen_name'] = self.language_dataframe['screen_name'].apply(self.transformScreenName)
+        data_frame['username'] = data_frame['username'].apply(self.transformUserName)
+        data_frame['screen_name'] = data_frame['screen_name'].apply(self.transformScreenName)
 
         # turn columns into series so we can enumerate through faster
-        screen_name_series = self.language_dataframe['screen_name']
-        username_series = self.language_dataframe['username']
+        screen_name_series = data_frame['screen_name']
+        username_series = data_frame['username']
 
         # a list containing the rows that are over the threshold
         rows_over_threshold = []
@@ -100,16 +114,18 @@ class Cleanse:
             else:
                 # use edit distance with regards to string length
                 edit_distance = self.evaluateEditDistance(translit_username, translit_screen_name)
-                if edit_distance > self.edit_threshold:
+                if edit_distance > edit_threshold:
                     rows_over_threshold.append(index)
                 else:
                     if verbose:
                         print(username,screen_name)
                         print(translit_username,translit_screen_name)
                         print(edit_distance)
+            self.line_counter = self.line_counter + 1
 
-        self.language_dataframe = self.language_dataframe.drop(rows_over_threshold)
-        self.language_dataframe.reset_index(drop=True, inplace=True)
+        cleansed_df = data_frame.drop(rows_over_threshold)
+        cleansed_df.reset_index(drop=True, inplace=True)
+        return cleansed_df
     
     """
     if a name is very long, it is more likely to need more edits
@@ -174,30 +190,6 @@ class Cleanse:
             return roman
 
     """
-    read the dataframe from a file
-    must not be empty and already been passed through the filter
-    """
-    def readData(self, file_path:str):
-        self.language_dataframe = pd.read_json(file_path)
-        self.language = language_dataframe["language"].get(0)
-    
-    """
-    saves the language dataframe as json
-    creates the out_path folder if it does not exist
-
-    has an optional argument to be able to have a custom file name
-    """
-    def saveData(self, out_path:str, file_name=None):
-        try:
-            os.mkdir(out_path)
-        except OSError as error:
-            print('folder already created')
-        if file_name is None:
-            self.language_dataframe.to_json(out_path + '/' +self.language+'_language_cleansed.json',orient="records")
-        else:
-            self.language_dataframe.to_json(out_path + '/' + file_name,orient="records")
-
-    """
     set the edit threshold
     must be a number
     """
@@ -208,21 +200,124 @@ class Cleanse:
     return the language data frame
     """
     def getDataFrame(self) -> pd.DataFrame:
-        return self.language_dataframe
+        return self.initial_dataframe
+    
+    def getTrainingDataFrame(self):
+        return self.training_dataframe
+
+    def getTestingDataFrame(self):
+        return self.testing_dataframe
 
     """
     saves language dataframe as text
     easier to load into keras this way
     """
-    def saveDataAsText(self, out_path='./', file_name=None):
-        just_names_df = self.language_dataframe[['username','screen_name']]
-        if file_name is None:
-            file_name = self.language+'_'+str(int(self.edit_threshold*10))+'_edit_distance_language_cleansed.txt'
-            print("Saving cleansed names as: " + file_name + " " + str(len(self.language_dataframe)) + " number of rows. ")
-            just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='w')
-        else:
-            print("Saving cleansed names as: " + file_name + " " + str(len(self.language_dataframe)) + " number of rows. ")
-            just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='w')
+    def saveTestAndTrain(self, out_path='./'):
+        train_just_names_df = self.training_dataframe[['username','screen_name']]
+
+        file_name = 'train'+'_'+str(int(self.edit_threshold*100))+'_edit_distance_language_cleansed.txt'
+        train_just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='w')
+        
+        test0_just_names_df = self.testing_dataframe_cleanse_0[['username','screen_name']]
+        test0_1_just_names_df = self.testing_dataframe_cleanse_0_1[['username','screen_name']]
+        test0_25_just_names_df = self.testing_dataframe_cleanse_0_25[['username','screen_name']]
+
+        # test 1 has data that is cleansed with edit threshold 0
+        file_name0 = 'test1_cleansed.txt'
+        test0_just_names_df.to_csv(out_path+file_name0, header=None, index=None, sep='\t', mode='w')
+        # test 2 has data that is cleansed with edit threshold 0.1
+        file_name0_1 = 'test2_cleansed.txt'
+        test0_1_just_names_df.to_csv(out_path+file_name0_1, header=None, index=None, sep='\t', mode='w')
+        # test 3 has data that is cleansed with edit threshold 0.25
+        file_name0_25 = 'test3_cleansed.txt'
+        test0_25_just_names_df.to_csv(out_path+file_name0_25, header=None, index=None, sep='\t', mode='w')
+
+        print("Saved cleansed names as: " + '\n' 
+        + file_name + " " + str(len(self.training_dataframe)) + " number of rows. " + '\n'
+        + file_name0 + " " + str(len(test0_just_names_df)) + " number of rows. " + '\n'
+        + file_name0_1 + " " + str(len(test0_1_just_names_df)) + " number of rows. " + '\n'
+        + file_name0_25 + " " + str(len(test0_25_just_names_df)) + " number of rows. " + '\n'
+        )
+
+        with open("cleansing_stats.txt", 'w') as f:
+            f.write("language: " + self.language)
+            f.write("training cleansed on edit threshold " + str(self.edit_threshold))
+            f.write(file_name + " " + str(len(self.training_dataframe)) + " number of rows. " + '\n')
+            f.write(file_name0 + " " + str(len(test0_just_names_df)) + " number of rows. " + '\n')
+            f.write(file_name0_1 + " " + str(len(test0_1_just_names_df)) + " number of rows. " + '\n')
+            f.write(file_name0_25 + " " + str(len(test0_25_just_names_df)) + " number of rows. " + '\n')
+            f.write("total number of lines read in: " + str(self.line_counter))
+
+    """
+    makes the train dataframe and test dataframe
+
+    currently num_in_test_set is how many rows are reserved for test set before cleansing
+    really it should be how many rows are given to test set, oh well
+
+    setting num_in_test_set = 1000 generates around about
+    30 for test set 1
+    50 for test set 2
+    100 for test set 3
+    """
+    def splitTrainTest(self, init_df, num_in_test_set = 1000):
+        # set the initial dataframe
+        self.initial_dataframe = init_df
+
+        # split into test
+        prng = np.random.RandomState(self.seed)
+        test_indices = prng.choice(len(self.initial_dataframe), size=num_in_test_set, replace=False)
+        self.testing_dataframe = self.initial_dataframe.iloc[test_indices]
+        self.testing_dataframe.reset_index(inplace=True)
+
+        # training dataframe is everything else
+        self.training_dataframe = self.initial_dataframe.loc[set(self.initial_dataframe.index) - set(test_indices)]
+        self.training_dataframe.reset_index(inplace=True)
+
+
+    """
+    this should be called after splitting into testing and training using splitTrainTest()
+
+    the purpose of the test set is for the model to be evaluated on never before seen data
+    there are actually going to be three test sets produced
+        1. with edit threshold 0
+        2. with edit threshold 0.04 and below
+        3. with edit threshold 0.1 and below
+    these three tests sets are going to be derived from the same initial dataset coming in from filtering
     
-    def getCleansedData(self):
-        return self.language_dataframe[['username','screen_name']].to_numpy()
+    in this way, we can compare the same test data across different experiments such as those involving changing edit-threshold
+    """
+    def createTestDataSets(self):
+        self.testing_dataframe_cleanse_0 = self.cleanseData(self.testing_dataframe, edit_threshold=0)
+        self.testing_dataframe_cleanse_0_1 = self.cleanseData(self.testing_dataframe, edit_threshold=0.1)
+        self.testing_dataframe_cleanse_0_25 = self.cleanseData(self.testing_dataframe, edit_threshold=0.25)
+
+    """
+    this should be called after splitting into testing and training using splitTrainTest()
+
+    this cleanses the training dataset
+    """
+    def createTrainDataSet(self, edit_threshold=0):
+        self.edit_threshold = edit_threshold
+        self.training_dataframe = self.cleanseData(self.training_dataframe, edit_threshold=edit_threshold)
+
+
+
+
+    # deprecated
+    # """
+    # splits the current dataframe into test and training
+    # then saves as text files
+    # """
+    # def splitTrainAndTestAndSave(self, num_in_test_set = 100):
+    #     just_names_df = self.initial_dataframe[['username','screen_name']]
+    #     test_set = just_names_df[:num_in_test_set]
+    #     training_set = just_names_df[num_in_test_set:]
+
+    #     prng = np.random.RandomState(seed=42)
+    #     # shuffles in place
+    #     prng.shuffle(training_set.values)
+
+
+    #     test_set.to_csv("test_set_"+self.language+"_"+str(int(self.edit_threshold*100))+".txt", header=None, index=None, sep='\t', mode='w')
+    #     training_set.to_csv("training_set_"+self.language+"_"+str(int(self.edit_threshold*100))+".txt", header=None, index=None, sep='\t', mode='w')
+    #     print("Saved test and training data")

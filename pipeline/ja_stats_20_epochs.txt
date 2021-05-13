@@ -1,0 +1,12 @@
+number of epochs: 20
+time taken: 0:10:28.364855
+min validation loss: 0.4993717670440674
+min validation loss epoch: 19
+max validation accuracy: 0.9105060696601868
+max validation accuracy epoch: 17
+test set 1 loss: 0.5329840183258057
+test set 1 accuracy: 0.8977272510528564
+test set 2 loss: 1.0143263339996338
+test set 2 accuracy: 0.8278530240058899
+test set 3 loss: 1.2712039947509766
+test set 4 accuracy: 0.8010291457176208

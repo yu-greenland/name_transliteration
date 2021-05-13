@@ -13,10 +13,13 @@ To do:
 - ~~currently when saving to text file, it appends to the end, make it not do that~~
 - maybe look at substrings of screen name and user name to see if they can be a better match than using the whole screen name and user name
 - from cleansing to model_trainer, I should be passing a tensor instead of saving a text file to disk
-- automatically detect the size of the file passed into the model_trainer, using this automatically split data into testing and training, perhaps use sklearn train_test_split function
 - ~~chave a way of saving the model and loading it back up again so I don't have to re-train it~~
 - make model give a couple of predictions instead of just one
 - using trained model to evalutate on test data, to further filter out, split data into two and perform cross evaluation using trained models,  see if it improves , calculte probability of incorrect/correct pairs, like another metric to evaluate on
+- ~~make train_test_split custom~~
+- do data exploration beforehand get a grasp
+- make the model use tensorflow data types
+- use the shuffle thing and epoch thing
 
 problems
 
@@ -117,3 +120,20 @@ We want to capture the Twitter data to the point where name pairs are not transl
 
 My hypothesis is that there is an "optimal" set of parameters in the data cleansing stage so that the system can perform human-like non-professional name transliterations. I define optimal cleansing as letting through all name pairs that can be regarded as a transliteration while not letting through name pairs that are in no way transliterations. A crude way of determining whether we have achieved this optimal cleansing is by taking a random sample of cleansed name pairs and manually assessing whether they are legitimate transliterations.
 The primary parameter to vary is the edit threshold. The edit threshold controls how far from a standard transliteration a name pair can be before being filtered out. I expect that increasing the edit threshold will cause the validation loss to also increase. This is because as the name pairs start to become increasingly different from the standard transliteration we expect them to no longer be actual transliterations, the model will have no pattern to learn from. Having some validation loss is tolerable, but when the validation loss becomes drastically big we assume that this is when the model starts to learn from invalid transliteration pairs. At this point when the validation loss becomes drastically big should be where the optimal edit threshold is. Verification through manual inspection of the cleansed data can be performed.
+
+Going back to the original goal of creating a transliteration system that can provide human-like non-professional transliterations for Japanese.
+How to verify that the steps to create this transliteration system is legitimate?
+
+An extension of this goal would be to generalize this over many languages.
+
+I think filtering does what it's supposed to do and makes sense in the context that I am performing it in.
+
+We go back to the very start of the system creation process of cleansing.
+
+Using model to refine new model
+
+1. Split initial filtered data into two sets: A and B
+2. Using set A, run the cleansing and model training using the optimal edit-distance estimated.
+3. From the model produced use it in place of the edit-distance cleansing technique. How to do this? Run predict on user name to acquire predicted name transliteration, if the predicted name is close enough to the screen name then accept it as cleansed.
+4. Using these name pairs from this new cleansing technique, train new model
+5. Compare loss and such on this new model
