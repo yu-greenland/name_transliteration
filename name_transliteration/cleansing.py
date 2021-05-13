@@ -258,6 +258,8 @@ class Cleanser:
     30 for test set 1
     50 for test set 2
     100 for test set 3
+
+    setting num_in_test_set = 2000 generates around about
     """
     def splitTrainTest(self, init_df, num_in_test_set = 1000):
         # set the initial dataframe

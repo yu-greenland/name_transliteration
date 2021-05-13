@@ -52,6 +52,10 @@ my_filter = filter.Filter("zh")
 # to perform the filtering, we supply the path to where the gzip files are stored
 my_filter.filterData("./../data/")
 
+# alternatively we can specify the number of files to filter
+# in this example only 5 twitter files will be read in
+my_filter.filterData("./../data/", 5)
+
 # save the filtered data as text for easy viewing
 my_filter.saveDataAsText()
 ```
@@ -60,32 +64,61 @@ my_filter.saveDataAsText()
 
 ```python
 import name_transliteration.cleansing as cleanse
-# instantiate an instance of the class, when instantiating the data frame to be cleansed on is also set
-my_cleanser = cleanse.Cleanse(my_filter.getDataFrame())
 
-# perform the cleansing
-my_cleanser.cleanseData()
+# instantiate the cleanser
+my_cleanser = cleanse.Cleanser()
 
-# save the cleansed data as text for easy viewing, also in the format that can be processed by the model builder
-my_cleanser.saveDataAsText()
+# given the DataFrame produced by the filter class, this method splits that DataFrame
+# into a single train DataFrame and three test DataFrames
+# these DataFrames reside inside the cleanser class
+my_cleanser.splitTrainTest(my_filter.getDataFrame())
+
+# this does the cleansing of the test datasets
+# cleansing is pre-set as 0, 0.1 and 0.25 edit-threshold on the three test datasets
+my_cleanser.createTestDataSets()
+
+# this does the cleansing of the training dataset
+# you can specify the edit_threshold to cleanse on
+my_cleanser.createTrainDataSet(edit_threshold = 0.1)
+
+# the model_trainer_and_tester class requires the data to be in text format
+# this method saves the datasets of test and train as text files
+my_cleanser.saveTestAndTrain()
 ```
 
-## The model builder class
+## The model trainer and tester
 
 ```python
-import name_transliteration.model_trainer as model_trainer
-# instantiate an instance of the class, when instantiating set the important variables of the class
-model_trainer = model_trainer.ModelTrainer(data_path = './zh_language_cleansed.txt')
+import name_transliteration.model_trainer as model_trainer_and_tester
 
-# run the whole training process, doing this will create a folder where the learnt weights go, this can be loaded up later
-model_trainer.runWholeTrainProcess()
+# instantiate the model trainer and tester class
+# have to provide the language and the number of epochs
+trainer_and_tester = model_trainer_and_tester.ModelTrainerAndTester(
+    language=language, 
+    epochs=20
+)
 
-# test what it has learnt
-model_trainer.predict("dabudong")
+# instead of manually calling each individual method to build, compile and train the model
+# this method chains all these methods together
+# however, you have to provide the training text file, might change in the future
+trainer_and_tester.runWholeTrainProcess('train_0_edit_distance_language_cleansed.txt')
 
-# plot the loss and accuracy
-model_trainer.plotLoss()
-model_trainer.plotAccuracy()
+# the training process takes a long time
+# this plays an audio so you are alerted when the training process has finished
+from IPython.display import Audio
+sound_file = './sound/beep-03.wav'
+Audio(sound_file, autoplay=True)
+
+# to evaluate how well the model has learnt name transliterations
+# we evaluate on unseen data, the three test datasets
+# have to provide the model name that was created
+# might change to having no required arguments since we have all the information already
+trainer_and_tester.evaluateOnTestData("ja_model_20")
+
+# saves stats
+trainer_and_tester.saveTrainingStats()
+
+# we have to save the dimensions of the model before we load it
 ```
 
 ## Loading the pre-trained model and perform transliterations
@@ -93,19 +126,7 @@ model_trainer.plotAccuracy()
 ```python
 import name_transliteration.model_trainer as model_trainer
 
-# we still have to load in the cleansed data into the model trainer
-model_trainer = model_trainer.ModelTrainer(language='zh', data_path = './'+'zh'+'_language_cleansed.txt')
-
-# this is because the decoder needs some information from the orignal data
-# this shouldn't take too long
-model_trainer.processData()
-
-# replace 'zh_model_50' with whatever the model name was called when saving the data
-# by default the model is saved as <language>_model_<number of epochs trained on>
-model_trainer.createDecoderEncoder('zh_model_50')
-
-# perform transliteration predictions
-model_trainer.predict("johnathon")
+# this has to 
 ```
 
 ## What story do I want to tell?
