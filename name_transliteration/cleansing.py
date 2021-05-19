@@ -240,8 +240,8 @@ class Cleanser:
         )
 
         with open("cleansing_stats.txt", 'w') as f:
-            f.write("language: " + self.language)
-            f.write("training cleansed on edit threshold " + str(self.edit_threshold))
+            f.write("language: " + self.language + '\n')
+            f.write("training cleansed on edit threshold " + str(self.edit_threshold) + '\n')
             f.write(file_name + " " + str(len(self.training_dataframe)) + " number of rows. " + '\n')
             f.write(file_name0 + " " + str(len(test0_just_names_df)) + " number of rows. " + '\n')
             f.write(file_name0_1 + " " + str(len(test0_1_just_names_df)) + " number of rows. " + '\n')
@@ -260,8 +260,28 @@ class Cleanser:
     100 for test set 3
 
     setting num_in_test_set = 2000 generates around about
+    60 for test set 1
+    80 for test set 2
+    200 for test set 3
+
+    setting num_in_test_set = 3000 generates around about
+    100 for test set 1
+    130 for test set 2
+    300 for test set 3
+
+    setting num_in_test_set = 4000 generates around about
+    120 for test set 1
+    170 for test set 2
+    400 for test set 3
+
+    setting num_in_test_set = 5000 generates around about
+    160 for test set 1
+    220 for test set 2
+    500 for test set 3
+
+    NOTE: these numbers are for japanese, cleansing on other languages will differ
     """
-    def splitTrainTest(self, init_df, num_in_test_set = 1000):
+    def splitTrainTest(self, init_df, num_in_test_set = 5000):
         # set the initial dataframe
         self.initial_dataframe = init_df
 

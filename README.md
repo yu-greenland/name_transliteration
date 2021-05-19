@@ -50,11 +50,11 @@ import name_transliteration.filtering as filter
 my_filter = filter.Filter("zh")
 
 # to perform the filtering, we supply the path to where the gzip files are stored
-my_filter.filterData("./../data/")
+my_filter.filterData("./data/")
 
 # alternatively we can specify the number of files to filter
 # in this example only 5 twitter files will be read in
-my_filter.filterData("./../data/", 5)
+my_filter.filterData("./data/", 5)
 
 # save the filtered data as text for easy viewing
 my_filter.saveDataAsText()
