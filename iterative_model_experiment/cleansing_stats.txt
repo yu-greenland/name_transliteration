@@ -1,0 +1,7 @@
+language: ja
+training cleansed on edit threshold 0.3
+train_30_edit_distance_language_cleansed.txt 29606 number of rows. 
+test1_cleansed.txt 174 number of rows. 
+test2_cleansed.txt 234 number of rows. 
+test3_cleansed.txt 481 number of rows. 
+total number of lines read in: 275297
