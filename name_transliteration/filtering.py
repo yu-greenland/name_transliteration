@@ -1,7 +1,3 @@
-# coding: utf-8
-
-import sys
-import re
 import gzip
 import json
 import os
@@ -11,8 +7,12 @@ pd.options.mode.chained_assignment = None
 
 class Filter:
     """
-    Represents a filter class part of the overall name transliteration training pipeline
+    The purpose of the filter class is to read in raw Twitter blobs of data.
+    These Twitter blobs are in JSON format.
+    The filter class filters on language. All Twitter data that is not recognised as the chosen language is removed.
+    The filtered data can be accessed by the DataFrame object that is created after filtering.
 
+    Represents a filter class, part of the overall name transliteration training pipeline
 
     language : str
         the language is what is going to be filtered upon, this must be in ISO 639-2 Language Code format
@@ -26,24 +26,25 @@ class Filter:
         self.language_dataframe = None
 
 
-    """
-    top level function that performs the entire filtering process
 
-    Parameters
-    ----------
-    data_path : str
-        a string, the path to the folder containig the Twitter data
-
-    num_files : int
-        the number of files that should be taken in, default it takes in all files in a folder
-
-    Returns
-    ----------
-    language_dataframe : pd.DataFrame
-        the DataFrame belonging to the class
-        also sets the language_dataframe variable
-    """
     def filterData(self, data_path:str, num_files:int = None):
+        """
+        top level function that performs the entire filtering process
+
+        Parameters
+        ----------
+        data_path : str
+            a string, the path to the folder containig the Twitter data
+
+        num_files : int
+            the number of files that should be taken in, default it takes in all files in a folder
+
+        Returns
+        ----------
+        language_dataframe : pd.DataFrame
+            the DataFrame belonging to the class
+            also sets the language_dataframe variable
+        """
         twitter_data_list = self.readData(data_path, num_files=num_files)
         twitter_data = pd.DataFrame(twitter_data_list)
 
@@ -63,11 +64,20 @@ class Filter:
         self.language_dataframe = df
         # return self.language_dataframe
 
-    """
-    very exerimental right now, like everything here
-    uses regex to only keep the unicode characters that belong to the language
-    """
-    def removeNonLanguageCharacters(self, line):
+    def removeNonLanguageCharacters(self, line:str) -> str:
+        """
+        Uses regex to only keep the unicode characters that belong to the language
+
+        Parameters
+        ----------
+        line : str
+            a name, or really any string
+
+        Returns
+        ----------
+        clean_name : str
+            the input string with all characters that are not part of the set language removed
+        """
         clean_name = ""
         if self.language == 'zh':
             # join characters separated by space
@@ -95,14 +105,24 @@ class Filter:
             print("language not supported")
         return clean_name
 
-    """
-    reads in data and additionally extracts the fields we are interested in
-    extracts the screen name, user name and language
+    def readData(self, data_path, num_files:int=None) -> list:
+        """
+        Reads in data and additionally extracts the fields we are interested in.
+        Extracts the screen name, user name and language.
 
-    data_path: a string, the path to the folder containig the Twitter data
-    returns a list of dictionaries
-    """
-    def readData(self, data_path, num_files:int=None):
+        Parameters
+        ----------
+        data_path : str
+            the data path to the folder that contains the Twitter blobs
+        
+        num_files : int (Optional)
+            the number of files to be read in, if None all files found in the folder will be read in
+
+        Returns
+        ----------
+        df_list : list
+            a list of dictionaries containing name pairs
+        """
         # the list that is going to contain all the dataframe information
         df_list = []
 
@@ -129,13 +149,13 @@ class Filter:
                 count = count + 1
         return df_list
 
-    """
-    saves the language dataframe as json
-    creates the out_path folder if it does not exist
-
-    has an optional argument to be able to have a custom file name
-    """
     def saveData(self, out_path, file_name=None):
+        """
+        saves the language dataframe as json
+        creates the out_path folder if it does not exist
+
+        has an optional argument to be able to have a custom file name
+        """
         try:
             os.mkdir(out_path)
         except OSError as error:
@@ -145,11 +165,11 @@ class Filter:
         else:
             self.language_dataframe.to_json(out_path + '/' + file_name,orient="records")
     
-    """
-    saves language dataframe as text
-    easier to read
-    """
     def saveDataAsText(self, out_path='./', file_name=None):
+        """
+        saves language dataframe as text
+        easier to read
+        """
         print("Saving filtered names. " + str(len(self.language_dataframe)) + " number of rows. ")
         just_names_df = self.language_dataframe[['username','screen_name']]
         if file_name is None:
@@ -157,14 +177,14 @@ class Filter:
         else:
             just_names_df.to_csv(out_path+file_name, header=None, index=None, sep='\t', mode='w')
 
-    """
-    return the language data frame
-    """
     def getDataFrame(self):
+        """
+        return the language data frame
+        """
         return self.language_dataframe
-    
-    """
-    sets the language data frame
-    """
+
     def setDataFrame(self, df):
+        """
+        sets the language data frame
+        """
         self.language_dataframe = df
