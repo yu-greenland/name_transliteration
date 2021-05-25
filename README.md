@@ -101,7 +101,7 @@ trainer_and_tester = model_trainer_and_tester.ModelTrainerAndTester(
 # instead of manually calling each individual method to build, compile and train the model
 # this method chains all these methods together
 # however, you have to provide the training text file, might change in the future
-trainer_and_tester.runWholeTrainProcess('train_0_edit_distance_language_cleansed.txt')
+trainer_and_tester.runWholeTrainProcess('train_10_edit_distance_language_cleansed.txt', 'model_name')
 
 # the training process takes a long time
 # this plays an audio so you are alerted when the training process has finished
@@ -113,7 +113,7 @@ Audio(sound_file, autoplay=True)
 # we evaluate on unseen data, the three test datasets
 # have to provide the model name that was created
 # might change to having no required arguments since we have all the information already
-trainer_and_tester.evaluateOnTestData("ja_model_20")
+trainer_and_tester.evaluateOnTestData("model_name")
 
 # saves stats
 trainer_and_tester.saveTrainingStats()
@@ -126,7 +126,12 @@ trainer_and_tester.saveTrainingStats()
 ```python
 import name_transliteration.model_trainer as model_trainer
 
-# this has to 
+loaded_model = model_trainer_and_tester.ModelTrainerAndTester(
+    language='ja'
+)
+loaded_model.loadDataParameters()
+loaded_model.createDecoderEncoder('model_A')
+loaded_model.predict("yuzu")
 ```
 
 ## What story do I want to tell?

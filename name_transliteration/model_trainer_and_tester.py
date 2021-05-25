@@ -469,7 +469,7 @@ class ModelTrainerAndTester():
                 prediction_list.extend(prediction)
                 print("completed prediction iteration: " + str(i) + " of " + str(num_runs))
         print(str(len(prediction_list)) + " predictions completed")
-        
+
         with open(data_path, "r", encoding="utf-8") as f:
             lines = f.read().split("\n")
 
@@ -485,10 +485,13 @@ class ModelTrainerAndTester():
             probability = 1
             for j, time_step in enumerate(row):
                 screen_name_char = screen_name[j]
-                idx = self.target_token_index[screen_name_char]
+                if screen_name_char in self.target_token_index:
+                    idx = self.target_token_index[screen_name_char]
+                else:
+                    idx = self.target_token_index[' ']
                 probability = probability * time_step[idx]
                 # stop when we reach the end of the screen name
-                if j == screen_name_length:
+                if j == screen_name_length-1:
                     prob_list.append(probability)
                     break
         
