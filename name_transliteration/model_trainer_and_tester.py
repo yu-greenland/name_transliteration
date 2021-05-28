@@ -7,6 +7,7 @@ import datetime
 import pickle
 from collections import OrderedDict
 from tensorflow.keras import backend as K
+import math
 
 class ModelTrainerAndTester():
     """
@@ -481,19 +482,21 @@ class ModelTrainerAndTester():
         for i, row in enumerate(prediction_list):
             _, screen_name = lines[i].split('\t')
             screen_name_length = len(screen_name)
-            # re-inititialise probability
-            probability = 1
+            # re-inititialise score, we are logging the probability because it is very small
+            score = 0
             for j, time_step in enumerate(row):
-                screen_name_char = screen_name[j]
-                if screen_name_char in self.target_token_index:
-                    idx = self.target_token_index[screen_name_char]
-                else:
+                # we also take into account the spaces, although most of the time the probability is 1
+                if j >= screen_name_length-1:
                     idx = self.target_token_index[' ']
-                probability = probability * time_step[idx]
-                # stop when we reach the end of the screen name
-                if j == screen_name_length-1:
-                    prob_list.append(probability)
-                    break
+                else:
+                    screen_name_char = screen_name[j]
+                    if screen_name_char in self.target_token_index:
+                        idx = self.target_token_index[screen_name_char]
+                    else:
+                        idx = self.target_token_index[' ']
+                score = score + math.log10(time_step[idx])
+            prob_list.append(score)
+
         
         # make sure that for every prediction produced by the model there is a probability associated with it
         assert len(prob_list) == len(prediction_list)
