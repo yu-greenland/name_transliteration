@@ -1,0 +1,4 @@
+num_unique_input_tokens:	27
+num_unique_output_tokens:	2814
+max_seq_length_of_input:	18
+max_seq_length_of_output:	16
