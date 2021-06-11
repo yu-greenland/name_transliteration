@@ -1,6 +1,6 @@
 # Name Transliteration
 
-Hello and welcome to my Advanced Topics in Computer Science project. This project is on using Twitter data to form a name transliteration model. The code in this repository make up the pipeline that turns Twitter data into a name transliteration model. This is a poetry project so in theory to install all necessary python libraries all you have to do is go ```poetry install```.
+Hello and welcome to my Advanced Topics in Computer Science project. This project is about using Twitter data to form a name transliteration model. The code in this repository make up the pipeline that turns Twitter data into a name transliteration model. This is a poetry project so in theory to install all necessary python libraries all you have to do is go ```poetry install```.
 
 You need to install fslite for epitran to work.
 <https://pypi.org/project/epitran/>
@@ -13,6 +13,10 @@ languages supported
 - Arabic
 - French
 - Korean
+
+## Description of files
+
+The main files of interest are found in the ```name_transliteration``` folder with ```filtering.py```, ```cleansing.py``` and ```model_trainer_and_tester.py``` forming the major components of the name transliteration pipeline. The rest of the folders are dedicated to experiments done using the name transliteration pipeline.
 
 ## Using the classes
 
